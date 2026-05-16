@@ -1,0 +1,93 @@
+.sim-field {
+  display: grid;
+  gap: 14px;
+}
+
+.sim-image-picker .elementselect {
+  margin: 0;
+}
+
+.sim-image-picker .elementselect .add {
+  display: none;
+}
+
+.sim-image-picker {
+  display: grid;
+  gap: 8px;
+}
+
+.sim-stage {
+  position: relative;
+  overflow: hidden;
+  min-height: 260px;
+  max-width: 100%;
+  border: 1px solid var(--hairline-color);
+  border-radius: var(--large-border-radius);
+  background: var(--gray-050);
+}
+
+.sim-stage.is-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sim-empty {
+  display: none;
+  color: var(--light-text-color);
+}
+
+.sim-stage.is-empty .sim-empty {
+  display: block;
+}
+
+.sim-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 640px;
+  object-fit: contain;
+}
+
+.sim-stage.is-empty .sim-image,
+.sim-stage.is-empty .sim-marker-layer {
+  display: none;
+}
+
+.sim-marker-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.sim-marker {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 3px solid var(--white);
+  border-radius: 50%;
+  background: var(--red-500);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
+  cursor: grab;
+  transform: translate(-50%, -50%);
+}
+
+.sim-marker::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: var(--white);
+}
+
+.sim-marker:active {
+  cursor: grabbing;
+}
+
+.sim-marker-table {
+  margin: 0;
+}
+
+.sim-actions {
+  align-items: center;
+}

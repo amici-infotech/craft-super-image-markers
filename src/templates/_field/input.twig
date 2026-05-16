@@ -1,0 +1,68 @@
+{% set inputId = id|namespaceInputId %}
+{% set imageSelectId = "#{id}-image"|namespaceInputId %}
+{% set markerStageId = "#{id}-stage"|namespaceInputId %}
+
+<div id="{{ inputId }}" class="sim-field">
+    {{ hiddenInput(name, value.serialize()|json_encode, {
+        class: "sim-field-input",
+    }) }}
+
+    <div class="sim-image-picker">
+        {% include "_includes/forms/elementSelect.twig" with {
+            id: "#{id}-image",
+            elements: image ? [image] : [],
+            elementType: "craft\\elements\\Asset",
+            selectionLabel: "Select image"|t("super-image-markers"),
+            single: true,
+            limit: 1,
+            registerJs: false,
+            name: false,
+            viewMode: "thumbs",
+        } only %}
+        <button type="button" class="btn sim-select-image">
+            {{ image ? "Change image"|t("super-image-markers") : "Select image"|t("super-image-markers") }}
+        </button>
+    </div>
+
+    <div id="{{ markerStageId }}" class="sim-stage {{ imageUrl ? "" : "is-empty" }}">
+        <div class="sim-empty">
+            {{ "Select an image to start placing markers."|t("super-image-markers") }}
+        </div>
+        <img class="sim-image" src="{{ imageUrl ?? "" }}" alt="">
+        <div class="sim-marker-layer"></div>
+    </div>
+
+    <div class="flex sim-actions">
+        <button type="button" class="btn add icon sim-add-marker">
+            {{ "Add marker"|t("super-image-markers") }}
+        </button>
+    </div>
+
+    <table class="data fullwidth sim-marker-table">
+        <thead>
+            <tr>
+                <th scope="col">{{ "Entry"|t("super-image-markers") }}</th>
+                <th scope="col">{{ "X"|t("super-image-markers") }}</th>
+                <th scope="col">{{ "Y"|t("super-image-markers") }}</th>
+                <th scope="col" class="thin"></th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+{% js %}
+new Craft.SuperImageMarkersInput({
+    id: {{ inputId|json_encode|raw }},
+    imageSelectId: {{ imageSelectId|json_encode|raw }},
+    fieldId: {{ field.id|json_encode|raw }},
+    assetSources: {{ assetSources|json_encode|raw }},
+    entrySources: {{ entrySources|json_encode|raw }},
+    image: {{ image ? {
+        id: image.id,
+        title: image.title,
+        url: imageUrl,
+    }|json_encode|raw : "null" }},
+    markers: {{ markers|json_encode|raw }},
+});
+{% endjs %}

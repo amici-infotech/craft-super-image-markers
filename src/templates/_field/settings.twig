@@ -1,0 +1,19 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.checkboxSelectField({
+    label: "Allowed asset sources"|t("super-image-markers"),
+    instructions: "Leave blank to allow images from all asset sources."|t("super-image-markers"),
+    id: "assetSources",
+    name: "assetSources",
+    options: assetSourceOptions,
+    values: field.assetSources == "*" ? [] : field.assetSources,
+}) }}
+
+{{ forms.checkboxSelectField({
+    label: "Allowed entry sources"|t("super-image-markers"),
+    instructions: "Leave blank to allow entries from all entry sources."|t("super-image-markers"),
+    id: "entrySources",
+    name: "entrySources",
+    options: entrySourceOptions,
+    values: field.entrySources == "*" ? [] : field.entrySources,
+}) }}
