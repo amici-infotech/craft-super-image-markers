@@ -25,7 +25,7 @@ Use it for interactive maps, floor plans, product lookbooks, team photos, diagra
 
 ## Installation
 
-For local development, add the plugin to your Craft project:
+Run this command to your Craft project:
 
 ```bash
 composer require amici/craft-super-image-markers

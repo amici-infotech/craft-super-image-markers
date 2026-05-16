@@ -45,9 +45,9 @@
     <main class="mx-auto my-10 w-[min(1120px,calc(100%_-_32px))]">
         <nav class="mb-6 flex flex-wrap gap-4 text-sm font-medium">
             {# Update these URLs to match wherever you copy the example templates. #}
-            <a class="text-blue-600 hover:text-blue-800" href="/suoer-image-markers/modal">Modal</a>
-            <a class="text-blue-600 hover:text-blue-800" href="/suoer-image-markers">Tooltip</a>
-            <a class="text-blue-600 hover:text-blue-800" href="/suoer-image-markers/info-window">Info Window</a>
+            <a class="text-blue-600 hover:text-blue-800" href="/{{ craft.app.request.getSegment(1) }}/modal">Modal</a>
+            <a class="text-blue-600 hover:text-blue-800" href="/{{ craft.app.request.getSegment(1) }}">Tooltip</a>
+            <a class="text-blue-600 hover:text-blue-800" href="/{{ craft.app.request.getSegment(1) }}/info-window">Info Window</a>
         </nav>
 
         <div class="mb-8">

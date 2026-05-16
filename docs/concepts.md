@@ -100,5 +100,3 @@ The field stores one JSON payload in Craft's content storage:
   ]
 }
 ```
-
-No custom database tables are required.
