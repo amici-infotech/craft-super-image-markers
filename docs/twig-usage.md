@@ -1,5 +1,7 @@
 # Twig Usage
 
+![Frontend Generated image map](images/visible-tooltip-at-frontend.png)
+
 ## Basic Output
 
 Given a field handle named `entryMapperField`:
@@ -150,8 +152,7 @@ Use `left` and `top` CSS percentages with `transform: translate(-50%, -50%)` to 
 If the field is attached to a global set:
 
 ```twig
-{% set globalSet = craft.app.globals.getSetByHandle('general') %}
-{% set imageMarker = globalSet ? globalSet.imageMarker.process() : null %}
+{% set imageMarker = general.imageMarker.process() %}
 
 {% if imageMarker and not imageMarker.image.isEmpty() and not imageMarker.markers.isEmpty() %}
     {% set image = imageMarker.image.one() %}

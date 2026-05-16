@@ -24,7 +24,7 @@
     "email": "contact@amiciinfotech.com",
     "issues": "https://github.com/amici-infotech/craft-super-image-markers/issues?state=open",
     "source": "https://github.com/amici-infotech/craft-super-image-markers",
-    "docs": "https://github.com/amici-infotech/craft-super-image-markers"
+    "docs": "https://docs.amiciinfotech.com/craft-cms/super-favourite"
   },
   "require": {
     "php": "^8.2",
@@ -41,7 +41,7 @@
     "description": "Select an image and map entry markers by percentage position.",
     "developer": "Amici Infotech",
     "developerUrl": "https://amiciinfotech.com",
-    "documentationUrl": "https://github.com/amici-infotech/craft-super-image-markers",
+    "documentationUrl": "https://docs.amiciinfotech.com/craft-cms/super-favourite",
     "changelogUrl": "https://github.com/amici-infotech/craft-super-image-markers/blob/master/CHANGELOG.md",
     "downloadUrl": "https://github.com/amici-infotech/craft-super-image-markers/archive/master.zip",
     "class": "amici\\SuperImageMarkers\\Plugin"

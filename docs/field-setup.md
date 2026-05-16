@@ -1,5 +1,7 @@
 # Field Setup
 
+![Create/Edit Field](images/image-marker-create-field)
+
 ## Create the Field
 
 1. Go to **Settings -> Fields**.

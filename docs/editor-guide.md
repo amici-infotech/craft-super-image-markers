@@ -1,5 +1,7 @@
 # Editor Guide
 
+![Field in backend form](images/map-field.png)
+
 ## Select an Image
 
 1. Edit an element that has a Super Image Markers field.
