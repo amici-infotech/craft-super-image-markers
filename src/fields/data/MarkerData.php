@@ -12,6 +12,7 @@ class MarkerData implements Serializable
         public readonly float $x,
         public readonly float $y,
         public readonly ?int $entryId = null,
+        public readonly string $color = '#d92828',
     ) {
     }
 
@@ -22,6 +23,7 @@ class MarkerData implements Serializable
             self::normalizePercentage($marker['x'] ?? 50),
             self::normalizePercentage($marker['y'] ?? 50),
             isset($marker['entryId']) && is_numeric($marker['entryId']) ? (int)$marker['entryId'] : null,
+            self::normalizeColor($marker['color'] ?? '#d92828'),
         );
     }
 
@@ -42,6 +44,7 @@ class MarkerData implements Serializable
             'x' => $this->x,
             'y' => $this->y,
             'entryId' => $this->entryId,
+            'color' => $this->color,
         ];
     }
 
@@ -51,5 +54,16 @@ class MarkerData implements Serializable
         $value = max(0.0, min(100.0, $value));
 
         return round($value, 2);
+    }
+
+    private static function normalizeColor(mixed $value): string
+    {
+        $value = is_string($value) ? trim($value) : '';
+
+        if (preg_match('/^#[0-9a-fA-F]{6}$/', $value)) {
+            return strtolower($value);
+        }
+
+        return '#d92828';
     }
 }

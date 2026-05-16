@@ -1,27 +1,16 @@
-{% set inputId = id|namespaceInputId %}
-{% set imageSelectId = "#{id}-image"|namespaceInputId %}
-{% set markerStageId = "#{id}-stage"|namespaceInputId %}
+{% set inputId = id %}
+{% set imageSelectId = assetInput.id %}
+{% set markerStageId = "#{id}-stage" %}
+{% set inputJsId = id|namespaceInputId %}
+{% set imageSelectJsId = assetInput.id|namespaceInputId %}
 
 <div id="{{ inputId }}" class="sim-field">
-    {{ hiddenInput(name, value.serialize()|json_encode, {
-        class: "sim-field-input",
+    {{ hiddenInput("#{name}[markers]", markers|json_encode, {
+        class: "sim-markers-input",
     }) }}
 
     <div class="sim-image-picker">
-        {% include "_includes/forms/elementSelect.twig" with {
-            id: "#{id}-image",
-            elements: image ? [image] : [],
-            elementType: "craft\\elements\\Asset",
-            selectionLabel: "Select image"|t("super-image-markers"),
-            single: true,
-            limit: 1,
-            registerJs: false,
-            name: false,
-            viewMode: "thumbs",
-        } only %}
-        <button type="button" class="btn sim-select-image">
-            {{ image ? "Change image"|t("super-image-markers") : "Select image"|t("super-image-markers") }}
-        </button>
+        {% include "_components/fieldtypes/Assets/input.twig" with assetInput only %}
     </div>
 
     <div id="{{ markerStageId }}" class="sim-stage {{ imageUrl ? "" : "is-empty" }}">
@@ -33,7 +22,7 @@
     </div>
 
     <div class="flex sim-actions">
-        <button type="button" class="btn add icon sim-add-marker">
+        <button type="button" class="btn sim-add-marker">
             {{ "Add marker"|t("super-image-markers") }}
         </button>
     </div>
@@ -41,6 +30,7 @@
     <table class="data fullwidth sim-marker-table">
         <thead>
             <tr>
+                <th scope="col" class="thin"></th>
                 <th scope="col">{{ "Entry"|t("super-image-markers") }}</th>
                 <th scope="col">{{ "X"|t("super-image-markers") }}</th>
                 <th scope="col">{{ "Y"|t("super-image-markers") }}</th>
@@ -53,10 +43,9 @@
 
 {% js %}
 new Craft.SuperImageMarkersInput({
-    id: {{ inputId|json_encode|raw }},
-    imageSelectId: {{ imageSelectId|json_encode|raw }},
+    id: {{ inputJsId|json_encode|raw }},
+    imageSelectId: {{ imageSelectJsId|json_encode|raw }},
     fieldId: {{ field.id|json_encode|raw }},
-    assetSources: {{ assetSources|json_encode|raw }},
     entrySources: {{ entrySources|json_encode|raw }},
     image: {{ image ? {
         id: image.id,

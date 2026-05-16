@@ -20,8 +20,9 @@ class ImageMarkersData implements Serializable
     {
         $imageId = isset($value['imageId']) && is_numeric($value['imageId']) ? (int)$value['imageId'] : null;
         $markers = [];
+        $markerRows = is_array($value['markers'] ?? null) ? $value['markers'] : [];
 
-        foreach (($value['markers'] ?? []) as $marker) {
+        foreach ($markerRows as $marker) {
             if (is_array($marker)) {
                 $markers[] = MarkerData::fromArray($marker);
             }
@@ -54,7 +55,7 @@ class ImageMarkersData implements Serializable
     }
 
     /**
-     * @return array<int, array{uid: string, x: float, y: float, entryId: int|null}>
+     * @return array<int, array{uid: string, x: float, y: float, entryId: int|null, color: string}>
      */
     public function markerInputRows(): array
     {

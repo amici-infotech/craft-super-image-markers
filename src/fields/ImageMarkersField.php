@@ -9,14 +9,21 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\elements\Asset;
 use craft\elements\Entry;
+use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Json;
+use craft\models\Volume;
+use craft\models\VolumeFolder;
 use Throwable;
+use yii\base\Model;
 use yii\db\Schema;
 
 class ImageMarkersField extends Field
 {
     public array|string|null $assetSources = '*';
     public array|string|null $entrySources = '*';
+    public ?string $defaultUploadLocationSource = null;
+    public ?string $defaultUploadLocationSubpath = null;
+    public bool $allowUploads = true;
 
     public static function displayName(): string
     {
@@ -61,6 +68,14 @@ class ImageMarkersField extends Field
             $value = [];
         }
 
+        if (isset($value['imageId']) && is_array($value['imageId'])) {
+            $value['imageId'] = $this->firstSubmittedId($value['imageId']);
+        }
+
+        if (isset($value['markers']) && is_string($value['markers'])) {
+            $value['markers'] = Json::decodeIfJson($value['markers']);
+        }
+
         return ImageMarkersData::fromArray($value);
     }
 
@@ -101,7 +116,7 @@ class ImageMarkersField extends Field
 
         if ($value->imageId === null) {
             if ($value->getMarkers()->count() > 0) {
-                $element->addError($this->handle, Craft::t('super-image-markers', 'Select an image before adding markers.'));
+                $this->addFieldError($element, Craft::t('super-image-markers', 'Select an image before adding markers.'));
             }
 
             return;
@@ -115,7 +130,7 @@ class ImageMarkersField extends Field
             ->one();
 
         if (!$asset instanceof Asset) {
-            $element->addError($this->handle, Craft::t('super-image-markers', 'Select a valid image asset.'));
+            $this->addFieldError($element, Craft::t('super-image-markers', 'Select a valid image asset.'));
         }
     }
 
@@ -140,7 +155,7 @@ class ImageMarkersField extends Field
                 ->one();
 
             if (!$entry instanceof Entry) {
-                $element->addError($this->handle, Craft::t('super-image-markers', 'One or more markers reference an invalid entry.'));
+                $this->addFieldError($element, Craft::t('super-image-markers', 'One or more markers reference an invalid entry.'));
                 return;
             }
         }
@@ -149,7 +164,8 @@ class ImageMarkersField extends Field
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['assetSources', 'entrySources'], 'safe'];
+        $rules[] = [['assetSources', 'entrySources', 'defaultUploadLocationSource', 'defaultUploadLocationSubpath'], 'safe'];
+        $rules[] = [['allowUploads'], 'boolean'];
 
         return $rules;
     }
@@ -169,7 +185,7 @@ class ImageMarkersField extends Field
             'image' => $image,
             'imageUrl' => $image instanceof Asset ? $this->imagePreviewUrl($image) : null,
             'markers' => $this->markerInputRows($value),
-            'assetSources' => $this->normalizedSources($this->assetSources),
+            'assetInput' => $this->assetInputVariables($value, $image, $element),
             'entrySources' => $this->normalizedSources($this->entrySources),
         ]);
     }
@@ -237,12 +253,121 @@ class ImageMarkersField extends Field
         return $sources ?: '*';
     }
 
+    private function assetInputVariables(ImageMarkersData $value, ?Asset $image, ?ElementInterface $element): array
+    {
+        $uploadSource = $this->defaultUploadLocationSource ?: $this->defaultAssetSource();
+        $uploadVolume = $this->volumeBySourceKey($uploadSource);
+        $uploadFs = $uploadVolume?->getFs();
+
+        return [
+            'id' => sprintf('%s-image', $this->getInputId()),
+            'name' => sprintf('%s[imageId]', $this->handle),
+            'jsClass' => 'Craft.AssetSelectInput',
+            'elementType' => Asset::class,
+            'elements' => $image ? [$image] : [],
+            'sources' => $this->normalizedSources($this->assetSources),
+            'condition' => null,
+            'referenceElement' => $element,
+            'criteria' => [
+                'kind' => ['image'],
+            ],
+            'searchCriteria' => null,
+            'sourceElementId' => !empty($element?->id) ? $element->id : null,
+            'defaultPlacement' => 'end',
+            'viewMode' => 'list',
+            'limit' => 1,
+            'storageKey' => 'field.' . ($this->id ?: 'super-image-markers'),
+            'fieldId' => $this->id,
+            'prevalidate' => false,
+            'canUpload' => (
+                $this->allowUploads &&
+                $uploadVolume &&
+                $uploadFs &&
+                Craft::$app->getUser()->checkPermission("saveAssets:$uploadVolume->uid")
+            ),
+            'fsType' => $uploadFs ? $uploadFs::class : null,
+            'defaultFieldLayoutId' => $uploadVolume->fieldLayoutId ?? null,
+            'defaultSource' => $uploadSource,
+            'defaultSourcePath' => $uploadVolume ? $this->defaultUploadSourcePath($uploadVolume, $element) : null,
+            'showSourcePath' => true,
+            'showFolders' => true,
+            'selectionLabel' => Craft::t('super-image-markers', 'Select image'),
+            'allowSelfRelations' => false,
+        ];
+    }
+
+    private function defaultAssetSource(): ?string
+    {
+        $sources = $this->normalizedSources($this->assetSources);
+
+        if (is_array($sources) && !empty($sources)) {
+            return $sources[0];
+        }
+
+        $options = $this->getAssetSourceOptions();
+
+        return $options[0]['value'] ?? null;
+    }
+
+    private function volumeBySourceKey(?string $sourceKey): ?Volume
+    {
+        if (!$sourceKey || !str_starts_with($sourceKey, 'volume:')) {
+            return null;
+        }
+
+        return Craft::$app->getVolumes()->getVolumeByUid(substr($sourceKey, 7));
+    }
+
+    private function defaultUploadSourcePath(Volume $volume, ?ElementInterface $element): ?array
+    {
+        if (!$this->defaultUploadLocationSubpath) {
+            return null;
+        }
+
+        try {
+            [$subpath, $folder] = AssetsHelper::resolveSubpath($volume, $this->defaultUploadLocationSubpath, $element);
+            $folder ??= Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume);
+        } catch (Throwable) {
+            return null;
+        }
+
+        $folders = [$folder];
+
+        while ($folder->parentId && $folder->volumeId !== null) {
+            $folder = $folder->getParent();
+            array_unshift($folders, $folder);
+        }
+
+        return array_map(
+            static fn(VolumeFolder $folder): array => $folder->getSourcePathInfo(),
+            $folders
+        );
+    }
+
+    private function firstSubmittedId(array $ids): ?int
+    {
+        foreach ($ids as $id) {
+            if (is_numeric($id)) {
+                return (int)$id;
+            }
+        }
+
+        return null;
+    }
+
+    private function addFieldError(ElementInterface $element, string $message): void
+    {
+        if ($element instanceof Model) {
+            $element->addError($this->handle, $message);
+        }
+    }
+
     private function imagePreviewUrl(Asset $asset): ?string
     {
         try {
-            return $asset->getUrl() ?: $asset->getThumbUrl(800);
+            return $asset->getUrl() ?: Craft::$app->getAssets()->getThumbUrl($asset, 800, 800);
         } catch (Throwable) {
-            return $asset->getThumbUrl(800);
+            return Craft::$app->getAssets()->getThumbUrl($asset, 800, 800);
         }
     }
 }

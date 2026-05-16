@@ -9,6 +9,31 @@
     values: field.assetSources == "*" ? [] : field.assetSources,
 }) }}
 
+{{ forms.selectField({
+    label: "Default upload volume"|t("super-image-markers"),
+    instructions: "Images uploaded from this field will be saved to this volume."|t("super-image-markers"),
+    id: "defaultUploadLocationSource",
+    name: "defaultUploadLocationSource",
+    options: [{label: "Choose a volume"|t("super-image-markers"), value: ""}]|merge(assetSourceOptions),
+    value: field.defaultUploadLocationSource,
+}) }}
+
+{{ forms.textField({
+    label: "Default upload subpath"|t("super-image-markers"),
+    instructions: "Optional subfolder path for uploaded images. You can use Craft object template syntax such as `{slug}`."|t("super-image-markers"),
+    id: "defaultUploadLocationSubpath",
+    name: "defaultUploadLocationSubpath",
+    value: field.defaultUploadLocationSubpath,
+    placeholder: "path/to/subfolder"|t("app"),
+}) }}
+
+{{ forms.lightswitchField({
+    label: "Allow uploading directly to the field"|t("super-image-markers"),
+    id: "allowUploads",
+    name: "allowUploads",
+    on: field.allowUploads,
+}) }}
+
 {{ forms.checkboxSelectField({
     label: "Allowed entry sources"|t("super-image-markers"),
     instructions: "Leave blank to allow entries from all entry sources."|t("super-image-markers"),
