@@ -13,15 +13,16 @@ Add the field anywhere Craft custom fields are supported, such as entry types, c
 
 ## Images
 
-The field accepts a single Craft asset image. The Control Panel selector is restricted to image assets, and field validation checks that the saved asset is still a valid image.
+The field accepts a single Craft asset image. The Control Panel uses Craft's native asset selector in list view, is restricted to image assets, and can optionally allow uploads to a configured asset volume.
 
-In Twig, access the image as an asset query:
+In Twig, access the image as a query-like reference:
 
 ```twig
 {% set image = entry.entryMapperField.image.one() %}
+{% set hasImage = not entry.entryMapperField.image.isEmpty() %}
 ```
 
-This keeps the API familiar for Craft users who already work with native Assets fields.
+This keeps the API familiar for Craft users who already work with native Assets fields while adding `isEmpty()`.
 
 ## Markers
 
@@ -33,8 +34,11 @@ Each marker stores:
 - `x` - horizontal position as a percentage from the left edge.
 - `y` - vertical position as a percentage from the top edge.
 - `entryId` - optional related entry ID.
+- `color` - marker color as a six-character hex value.
 
 Coordinates are saved with two decimal places and clamped between `0` and `100`.
+
+Markers can be reordered in the marker table. The frontend receives markers in the saved order.
 
 ## Percentage Coordinates
 
@@ -57,10 +61,11 @@ This is important because frontend images are usually responsive. The same marke
 
 Each marker can link to one Craft entry. Editors assign the entry by double-clicking a marker or using the marker table row.
 
-In Twig, access the related entry as an entry query:
+In Twig, access the related entry as a query-like reference:
 
 ```twig
 {% set relatedEntry = item.marker.entry.one() %}
+{% set hasRelatedEntry = not item.marker.entry.isEmpty() %}
 ```
 
 The marker also exposes the raw ID:
@@ -68,6 +73,14 @@ The marker also exposes the raw ID:
 ```twig
 {{ item.marker.entryId }}
 ```
+
+When rendering a page with multiple markers, call `process()` once:
+
+```twig
+{% set mapper = entry.entryMapperField.process() %}
+```
+
+`process()` prepares the image and marker entries before rendering, so `marker.entry.one()` keeps working without one query per marker.
 
 ## Stored Data
 
@@ -81,7 +94,8 @@ The field stores one JSON payload in Craft's content storage:
       "uid": "marker-abc",
       "x": 42.25,
       "y": 61.5,
-      "entryId": 456
+      "entryId": 456,
+      "color": "#d92828"
     }
   ]
 }

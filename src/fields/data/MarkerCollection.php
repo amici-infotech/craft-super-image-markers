@@ -33,6 +33,11 @@ class MarkerCollection implements Countable, IteratorAggregate
         return count($this->markers);
     }
 
+    public function isEmpty(): bool
+    {
+        return $this->count() === 0;
+    }
+
     public function getIterator(): Traversable
     {
         return new ArrayIterator($this->markers);

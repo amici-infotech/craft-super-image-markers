@@ -26,6 +26,15 @@ Check these items:
 
 The image selector is restricted to image assets by design.
 
+## I Cannot Upload an Image
+
+Check these items:
+
+- **Allow uploads** is enabled in the field settings.
+- **Default upload location source** points to a valid asset volume.
+- The current user has permission to save assets in that volume.
+- The selected volume has a working filesystem.
+
 ## I Cannot Select the Entry I Need
 
 Check these items:
@@ -63,7 +72,9 @@ Do not convert marker values to pixels unless you also account for the rendered 
 Check that your template loops over `.markers.all()`:
 
 ```twig
-{% for item in entry.entryMapperField.markers.all() %}
+{% set mapper = entry.entryMapperField.process() %}
+
+{% for item in mapper.markers.all() %}
     {{ item.marker.x }}
     {{ item.marker.y }}
 {% endfor %}
@@ -76,10 +87,38 @@ Also confirm markers have been added in the Control Panel and the element has be
 Markers can exist without a selected entry while editing. In frontend templates, guard against empty related entries:
 
 ```twig
+{% set mapper = entry.entryMapperField.process() %}
+
+{% for item in mapper.markers.all() %}
 {% set relatedEntry = item.marker.entry.one() %}
 
 {% if relatedEntry %}
     <a href="{{ relatedEntry.url }}">{{ relatedEntry.title }}</a>
+{% endif %}
+{% endfor %}
+```
+
+If `process()` is used, disabled or unavailable entries resolve to `null` before rendering.
+
+## Templates Are Running Too Many Queries
+
+Call `process()` once before rendering the image map:
+
+```twig
+{% set mapper = entry.entryMapperField.process() %}
+```
+
+After processing, `mapper.image.one()` and `item.marker.entry.one()` continue to work, but the image and marker entries have already been prepared.
+
+## Empty Checks Are Verbose
+
+Use the query-like `isEmpty()` helpers:
+
+```twig
+{% set mapper = entry.entryMapperField.process() %}
+
+{% if not mapper.image.isEmpty() and not mapper.markers.isEmpty() %}
+    {# Render map #}
 {% endif %}
 ```
 

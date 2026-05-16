@@ -3,7 +3,7 @@ namespace amici\SuperImageMarkers\fields\data;
 
 use craft\base\Serializable;
 use craft\elements\Asset;
-use craft\elements\db\AssetQuery;
+use craft\elements\Entry;
 
 class ImageMarkersData implements Serializable
 {
@@ -13,6 +13,8 @@ class ImageMarkersData implements Serializable
     public function __construct(
         public readonly ?int $imageId = null,
         private readonly array $markers = [],
+        private readonly ?Asset $resolvedImage = null,
+        private readonly bool $processed = false,
     ) {
     }
 
@@ -31,11 +33,15 @@ class ImageMarkersData implements Serializable
         return new self($imageId, $markers);
     }
 
-    public function getImage(): AssetQuery
+    public function getImage(): ElementReference
     {
-        return Asset::find()
+        if ($this->processed) {
+            return ElementReference::processed($this->resolvedImage);
+        }
+
+        return ElementReference::query(fn() => Asset::find()
             ->id($this->imageId ?: 0)
-            ->kind('image');
+            ->kind('image'));
     }
 
     public function getMarkers(): MarkerCollection
@@ -52,6 +58,37 @@ class ImageMarkersData implements Serializable
                 $this->markers
             ),
         ];
+    }
+
+    public function process(): self
+    {
+        $image = $this->imageId ? Asset::find()
+            ->id($this->imageId)
+            ->kind('image')
+            ->one() : null;
+
+        $entryIds = array_values(array_unique(array_filter(
+            array_map(
+                static fn(MarkerData $marker): ?int => $marker->entryId,
+                $this->markers
+            )
+        )));
+        $entries = [];
+
+        if (!empty($entryIds)) {
+            foreach (Entry::find()->id($entryIds)->all() as $entry) {
+                $entries[$entry->id] = $entry;
+            }
+        }
+
+        $markers = array_map(
+            static fn(MarkerData $marker): MarkerData => $marker->withResolvedEntry(
+                $marker->entryId ? ($entries[$marker->entryId] ?? null) : null
+            ),
+            $this->markers
+        );
+
+        return new self($this->imageId, $markers, $image, true);
     }
 
     /**

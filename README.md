@@ -7,13 +7,16 @@ Use it for interactive maps, floor plans, product lookbooks, team photos, diagra
 ## Features
 
 - Select a single Craft asset image from the field input.
+- Use Craft's native asset selector UI, including uploads when enabled.
 - Preview the selected image directly in the Control Panel.
 - Add round markers and drag them anywhere on the image.
 - Store marker positions as X/Y percentages so they scale with responsive images.
 - Double-click a marker to select a related Craft entry.
-- Review selected entries and coordinates in a Craft-style table below the image.
-- Limit selectable asset sources and entry sources from the field settings.
-- Use simple Twig accessors for the selected image, marker rows, coordinates, and related entries.
+- Review selected entries, colors, coordinates, and ordering in a Craft-style table below the image.
+- Choose marker colors and reorder markers with drag handles.
+- Limit selectable asset sources, upload location, upload behavior, and entry sources from the field settings.
+- Use simple Twig accessors for the selected image, marker rows, coordinates, colors, and related entries.
+- Call `process()` to preload the image and marker entries before rendering.
 
 ## Requirements
 
@@ -37,16 +40,18 @@ You can also install it from **Settings -> Plugins** in the Craft Control Panel.
 2. Create a new field.
 3. Choose **Image Markers [Super Image Markers]** as the field type.
 4. Optionally limit the allowed asset sources and entry sources.
-5. Add the field to an entry type, category group, or any element layout that supports custom fields.
-6. Edit an element, select an image, add markers, and assign entries.
+5. Optionally choose the default upload location and whether uploads are allowed.
+6. Add the field to an entry type, category group, global set, or any element layout that supports custom fields.
+7. Edit an element, select or upload an image, add markers, choose colors, sort rows, and assign entries.
 
 ## Twig Example
 
 ```twig
-{% set mapper = entry.entryMapperField %}
-{% set image = mapper.image.one() %}
+{% set mapper = entry.entryMapperField.process() %}
 
-{% if image %}
+{% if not mapper.image.isEmpty() and not mapper.markers.isEmpty() %}
+    {% set image = mapper.image.one() %}
+
     <div class="image-map">
         <img src="{{ image.url }}" alt="{{ image.title }}">
 
@@ -83,11 +88,25 @@ Local docs are split by task:
 Given a field handle such as `entryMapperField`:
 
 - `entry.entryMapperField.image.one()` returns the selected image asset.
+- `entry.entryMapperField.image.isEmpty()` checks whether there is a valid selected image.
 - `entry.entryMapperField.markers.all()` returns all marker items in saved order.
+- `entry.entryMapperField.markers.isEmpty()` checks whether any markers have been saved.
 - `item.marker.x` returns the marker's horizontal percentage.
 - `item.marker.y` returns the marker's vertical percentage.
+- `item.marker.color` returns the marker's hex color.
 - `item.marker.entryId` returns the related entry ID.
 - `item.marker.entry.one()` returns the related entry.
+- `entry.entryMapperField.process()` preloads the image and marker entries while keeping the same API.
+
+## Example Templates
+
+This repository includes frontend examples under `templates/suoer-image-markers/`:
+
+- `index.twig` renders hover/focus tooltips.
+- `modal.twig` renders click-to-open modals.
+- `info-window.twig` renders map-style info windows with a pointer tail.
+
+The examples use Tailwind CSS from the CDN for demonstration only.
 
 ## License
 

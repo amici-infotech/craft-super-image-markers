@@ -2,7 +2,6 @@
 namespace amici\SuperImageMarkers\fields\data;
 
 use craft\base\Serializable;
-use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 
 class MarkerData implements Serializable
@@ -13,6 +12,8 @@ class MarkerData implements Serializable
         public readonly float $y,
         public readonly ?int $entryId = null,
         public readonly string $color = '#d92828',
+        private readonly ?Entry $resolvedEntry = null,
+        private readonly bool $processed = false,
     ) {
     }
 
@@ -32,9 +33,26 @@ class MarkerData implements Serializable
         return $this;
     }
 
-    public function getEntry(): EntryQuery
+    public function getEntry(): ElementReference
     {
-        return Entry::find()->id($this->entryId ?: 0);
+        if ($this->processed) {
+            return ElementReference::processed($this->resolvedEntry);
+        }
+
+        return ElementReference::query(fn() => Entry::find()->id($this->entryId ?: 0));
+    }
+
+    public function withResolvedEntry(?Entry $entry): self
+    {
+        return new self(
+            $this->uid,
+            $this->x,
+            $this->y,
+            $this->entryId,
+            $this->color,
+            $entry,
+            true,
+        );
     }
 
     public function serialize(): array

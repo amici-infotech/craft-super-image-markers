@@ -7,7 +7,7 @@
 3. Enter a name such as `Entry Mapper`.
 4. Use a handle such as `entryMapperField`.
 5. Choose **Image Markers [Super Image Markers]** as the field type.
-6. Configure source restrictions if needed.
+6. Configure source restrictions and upload behavior if needed.
 7. Save the field.
 
 ## Add the Field to a Layout
@@ -21,6 +21,7 @@ Common examples:
 - Entry type for a venue map.
 - Entry type for a staff or team photo.
 - Category group for location diagrams.
+- Global set for site-wide maps or shared diagrams.
 
 ## Asset Source Restrictions
 
@@ -35,6 +36,16 @@ Use source restrictions when:
 - The project has separate volumes for documents, downloads, and images.
 
 The selector still restricts choices to image assets.
+
+## Upload Settings
+
+Use the upload settings when editors should be able to upload a new image without leaving the field:
+
+- **Default upload location source** chooses the asset volume used by the upload button.
+- **Default upload location subpath** optionally places uploads in a folder path, including Craft-supported dynamic subpaths.
+- **Allow uploads** controls whether the upload button is available in the native asset selector.
+
+Uploads also depend on the current user's Craft asset permissions. If a user cannot save assets in the selected volume, the upload action will not be available to them.
 
 ## Entry Source Restrictions
 
@@ -63,8 +74,9 @@ Choose a handle that describes what the mapped image represents:
 The frontend API uses the field handle directly:
 
 ```twig
-{% set image = entry.imageMap.image.one() %}
-{% set markers = entry.imageMap.markers.all() %}
+{% set imageMap = entry.imageMap.process() %}
+{% set image = imageMap.image.one() %}
+{% set markers = imageMap.markers.all() %}
 ```
 
 ## Validation Behavior
@@ -77,3 +89,5 @@ The field validates that:
 - Markers are not saved without an image.
 
 Coordinate values are normalized before saving, so invalid values are clamped into the `0` to `100` range.
+
+Marker colors are normalized to valid six-character hex values. Invalid colors fall back to the default marker color.
