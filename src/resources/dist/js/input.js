@@ -1,12 +1,19 @@
 (() => {
+  // Craft is only available in the Control Panel. Exit quietly if loaded elsewhere.
   if (typeof Craft === 'undefined') {
     return;
   }
 
+  /**
+   * Returns the best display label available from Craft's element selector payload.
+   */
   const elementLabel = (element) => {
     return element.title || element.label || element.name || `#${element.id}`;
   };
 
+  /**
+   * Formats a percentage for table display without unnecessary trailing precision.
+   */
   const formatPercentage = (value) => {
     const number = Number.parseFloat(value);
 
@@ -17,6 +24,9 @@
     return String(Math.round(number * 100) / 100);
   };
 
+  /**
+   * Clamps coordinates to the valid percentage range used by field storage.
+   */
   const clampPercentage = (value) => {
     const number = Number.parseFloat(value);
 
@@ -27,10 +37,16 @@
     return Math.max(0, Math.min(100, Math.round(number * 100) / 100));
   };
 
+  /**
+   * Accepts valid hex colors and falls back to the plugin default color.
+   */
   const normalizeColor = (value) => {
     return /^#[0-9a-f]{6}$/i.test(value || '') ? value.toLowerCase() : '#d92828';
   };
 
+  /**
+   * Creates a stable client-side marker ID for new unsaved markers.
+   */
   const createUid = () => {
     if (window.crypto?.randomUUID) {
       return window.crypto.randomUUID();
@@ -39,6 +55,9 @@
     return `marker-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   };
 
+  /**
+   * Reads the first selected element ID from Craft's native element selector input.
+   */
   const readInputId = ($input) => {
     const value = $input.val();
 
@@ -49,7 +68,13 @@
     return value || null;
   };
 
+  /**
+   * Garnish controller for one Super Image Markers field input.
+   */
   Craft.SuperImageMarkersInput = Garnish.Base.extend({
+    /**
+     * Initializes DOM references, event handlers, and initial rendering.
+     */
     init(settings) {
       this.settings = settings;
       this.$container = $(`#${settings.id}`);
@@ -63,6 +88,7 @@
       this.markers = Array.isArray(settings.markers) ? settings.markers : [];
       this.dragState = null;
 
+      // Add marker button opens the entry selector before inserting the marker.
       this.$container.on('click.superImageMarkers', '.sim-add-marker', (event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -71,16 +97,19 @@
 
       this.observeImageSelector();
 
+      // Pointer events support mouse, pen, and touch dragging.
       this.$layer.on('pointerdown', '.sim-marker', (event) => {
         this.startDrag(event);
       });
 
+      // Double-clicking a marker changes its related entry.
       this.$layer.on('dblclick', '.sim-marker', (event) => {
         event.preventDefault();
         const marker = this.findMarker($(event.currentTarget).data('uid'));
         this.selectEntry(marker);
       });
 
+      // The table edit icon uses the same entry selector as marker double-click.
       this.$tableBody.on('click', '[data-action="select-entry"]', (event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -88,11 +117,13 @@
         this.selectEntry(marker);
       });
 
+      // Remove marker rows from both the table and the image layer.
       this.$tableBody.on('click', '[data-action="remove-marker"]', (event) => {
         event.preventDefault();
         this.removeMarker($(event.currentTarget).data('uid'));
       });
 
+      // Color changes update the marker preview, table swatch, and hidden JSON immediately.
       this.$tableBody.on('input change', '.sim-color-input', (event) => {
         const marker = this.findMarker($(event.currentTarget).data('uid'));
 
@@ -108,6 +139,7 @@
         this.syncMarkersInput();
       });
 
+      // Table row drag-and-drop only starts from the sort handle.
       this.$tableBody.on('dragstart', '.sim-marker-row', (event) => {
         if (!$(event.originalEvent.target).closest('.sim-sort-handle').length) {
           event.preventDefault();
@@ -119,11 +151,13 @@
         event.originalEvent.dataTransfer.setData('text/plain', event.currentTarget.dataset.uid);
       });
 
+      // Allow dropping marker rows onto other marker rows.
       this.$tableBody.on('dragover', '.sim-marker-row', (event) => {
         event.preventDefault();
         event.originalEvent.dataTransfer.dropEffect = 'move';
       });
 
+      // Reorder the marker array using the dragged row UID and target row UID.
       this.$tableBody.on('drop', '.sim-marker-row', (event) => {
         event.preventDefault();
         this.reorderMarker(
@@ -132,6 +166,7 @@
         );
       });
 
+      // Clean up the visual dragging state regardless of drop success.
       this.$tableBody.on('dragend', '.sim-marker-row', (event) => {
         event.currentTarget.classList.remove('is-dragging');
       });
@@ -140,6 +175,9 @@
       this.syncMarkersInput();
     },
 
+    /**
+     * Adds a marker at the image center after selecting a related entry.
+     */
     addMarker() {
       this.updateImageFromSelector(false);
 
@@ -149,6 +187,7 @@
       }
 
       this.openEntrySelector((element) => {
+        // New markers start centered; editors can drag them to the final coordinate.
         this.markers.push({
           uid: createUid(),
           x: 50,
@@ -163,6 +202,9 @@
       });
     },
 
+    /**
+     * Changes the related entry for an existing marker.
+     */
     selectEntry(marker) {
       if (!marker) {
         return;
@@ -177,6 +219,9 @@
       });
     },
 
+    /**
+     * Opens Craft's native entry selector modal.
+     */
     openEntrySelector(onSelect) {
       Craft.createElementSelectorModal('craft\\elements\\Entry', {
         storageKey: `super-image-markers-entries-${this.settings.fieldId || 'new'}`,
@@ -188,12 +233,16 @@
           const element = elements[0];
 
           if (element) {
+            // The callback lets callers decide whether to add or update a marker.
             onSelect(element);
           }
         },
       });
     },
 
+    /**
+     * Starts dragging a marker on the image preview.
+     */
     startDrag(event) {
       if (!this.hasSelectedImage()) {
         return;
@@ -209,6 +258,7 @@
       event.currentTarget.setPointerCapture?.(event.originalEvent.pointerId);
       this.dragState = {marker};
 
+      // Bind document-level handlers so dragging continues if the pointer leaves the marker.
       $(document)
         .on('pointermove.superImageMarkers', (moveEvent) => {
           this.dragMarker(moveEvent, marker);
@@ -218,9 +268,13 @@
         });
     },
 
+    /**
+     * Updates marker coordinates while the user drags.
+     */
     dragMarker(event, marker) {
       const rect = this.$stage[0].getBoundingClientRect();
 
+      // Convert rendered image coordinates into responsive percentages.
       marker.x = clampPercentage(((event.clientX - rect.left) / rect.width) * 100);
       marker.y = clampPercentage(((event.clientY - rect.top) / rect.height) * 100);
 
@@ -229,17 +283,26 @@
       this.syncMarkersInput();
     },
 
+    /**
+     * Stops marker dragging and removes temporary document handlers.
+     */
     stopDrag() {
       this.dragState = null;
       $(document).off('.superImageMarkers');
     },
 
+    /**
+     * Removes a marker by UID.
+     */
     removeMarker(uid) {
       this.markers = this.markers.filter((marker) => marker.uid !== uid);
       this.render();
       this.syncMarkersInput();
     },
 
+    /**
+     * Reorders markers after a table row drag-and-drop action.
+     */
     reorderMarker(sourceUid, targetUid) {
       if (!sourceUid || !targetUid || sourceUid === targetUid) {
         return;
@@ -258,16 +321,25 @@
       this.syncMarkersInput();
     },
 
+    /**
+     * Finds a marker by its stable UID.
+     */
     findMarker(uid) {
       return this.markers.find((marker) => marker.uid === uid);
     },
 
+    /**
+     * Renders the image preview, marker buttons, and marker table.
+     */
     render() {
       this.renderImage();
       this.renderMarkers();
       this.renderTable();
     },
 
+    /**
+     * Updates the image preview state.
+     */
     renderImage() {
       this.$stage.toggleClass('is-empty', !this.hasSelectedImage());
 
@@ -278,10 +350,16 @@
       }
     },
 
+    /**
+     * Checks whether the field currently has a selected image.
+     */
     hasSelectedImage() {
       return !!(this.image?.id || this.image?.url || this.$image.attr('src'));
     },
 
+    /**
+     * Watches Craft's native asset selector for changes.
+     */
     observeImageSelector() {
       if (!this.$imageSelect.length) {
         return;
@@ -291,6 +369,7 @@
         this.updateImageFromSelector();
       });
 
+      // Native element chips update through DOM changes rather than plugin events.
       observer.observe(this.$imageSelect[0], {
         childList: true,
         subtree: true,
@@ -298,11 +377,15 @@
         attributeFilter: ['value', 'data-id', 'data-url', 'data-label'],
       });
 
+      // Hidden input changes catch direct updates after uploads or replacement.
       this.$imageSelect.on('change.superImageMarkers input.superImageMarkers', 'input[type="hidden"]', () => {
         this.updateImageFromSelector();
       });
     },
 
+    /**
+     * Reads image metadata from Craft's native asset selector DOM.
+     */
     updateImageFromSelector(render = true) {
       const $element = this.$imageSelect.find('.element[data-id]').first();
       const id = Number.parseInt(
@@ -317,6 +400,7 @@
         null;
 
       if (!Number.isFinite(id) && !url) {
+        // No selected chip or URL means the image was removed.
         this.image = null;
         if (render) {
           this.render();
@@ -324,6 +408,7 @@
         return;
       }
 
+      // Store enough data to render the preview immediately without another request.
       this.image = {
         id: Number.isFinite(id) ? id : this.image?.id || null,
         title: $element.data('label') || $element.find('.title').text() || `#${id}`,
@@ -335,10 +420,14 @@
       }
     },
 
+    /**
+     * Renders marker buttons over the image.
+     */
     renderMarkers() {
       this.$layer.empty();
 
       for (const marker of this.markers) {
+        // Buttons are used so markers are focusable and accessible in the CP.
         const $marker = $('<button/>', {
           type: 'button',
           class: 'sim-marker',
@@ -353,6 +442,9 @@
       }
     },
 
+    /**
+     * Positions one rendered marker at its saved percentage coordinates.
+     */
     positionMarker(marker) {
       this.$layer
         .find(`.sim-marker[data-uid="${marker.uid}"]`)
@@ -362,10 +454,14 @@
         });
     },
 
+    /**
+     * Renders the Craft-style marker table below the image.
+     */
     renderTable() {
       this.$tableBody.empty();
 
       if (!this.markers.length) {
+        // Keep an empty row so the table layout remains visible before markers exist.
         this.$tableBody.append(`<tr><td colspan="5" class="light">${Craft.t('super-image-markers', 'No markers added yet.')}</td></tr>`);
         return;
       }
@@ -378,6 +474,7 @@
           'data-uid': marker.uid,
           draggable: true,
         });
+        // Build cells with jQuery to avoid injecting unescaped editor-controlled entry titles.
         const $sortCell = $('<td/>', {class: 'thin sim-sort-cell'});
         const $entryCell = $('<td/>', {class: 'sim-entry-cell'});
         const $entryWrap = $('<div/>', {class: 'sim-entry-wrap'});
@@ -388,6 +485,7 @@
           'aria-label': Craft.t('super-image-markers', 'Select entry'),
         });
 
+        // Craft-like status dot shows whether a marker has an entry selected.
         $('<span/>', {
           class: hasEntry ? 'status enabled' : 'status pending',
         }).appendTo($entryChip);
@@ -399,6 +497,7 @@
 
         $entryChip.appendTo($entryWrap);
 
+        // Dedicated edit icon keeps the entry title display from looking like a button.
         $('<button/>', {
           type: 'button',
           class: 'btn action-btn small sim-entry-action',
@@ -416,6 +515,7 @@
           text: index + 1,
         }).appendTo($sortCell);
 
+        // Row order maps directly to the order returned by `markers.all()` in Twig.
         $row.append($sortCell);
         $row.append($entryCell);
         $row.append($('<td/>', {text: formatPercentage(marker.x)}));
@@ -423,6 +523,7 @@
         $row.append(
           $('<td/>', {class: 'thin sim-row-actions'})
             .append($('<div/>', {class: 'sim-row-actions-inner'}).append(
+              // The color input is visually represented by a Craft-style swatch.
               $('<label/>', {
                 class: 'sim-color-control',
                 title: Craft.t('super-image-markers', 'Marker color'),
@@ -438,6 +539,7 @@
                   'aria-label': Craft.t('super-image-markers', 'Marker color'),
                 })
               ),
+              // Removing a marker only affects this field value; it does not delete the entry.
               $('<button/>', {
                 type: 'button',
                 class: 'delete icon',
@@ -453,6 +555,9 @@
       }
     },
 
+    /**
+     * Writes the marker array to the hidden JSON input Craft submits.
+     */
     syncMarkersInput() {
       this.$markersInput.val(JSON.stringify(this.markers.map((marker) => ({
           uid: marker.uid,

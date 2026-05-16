@@ -161,8 +161,10 @@ If the field is attached to a global set:
 
 ## Example Templates
 
-The Craft project includes three Tailwind CDN examples:
+The plugin includes three Tailwind CDN examples in `example-templates/`:
 
-- `/suoer-image-markers` - tooltip markers.
-- `/suoer-image-markers/modal` - modal marker details.
-- `/suoer-image-markers/info-window` - map-style info windows.
+- `tooltip.twig` - tooltip markers.
+- `modal.twig` - modal marker details.
+- `info-window.twig` - map-style info windows.
+
+Copy them into your Craft project's `templates/` folder and adjust the routes and field source for your project.

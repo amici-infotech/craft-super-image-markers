@@ -100,13 +100,13 @@ Given a field handle such as `entryMapperField`:
 
 ## Example Templates
 
-This repository includes frontend examples under `templates/suoer-image-markers/`:
+This plugin includes copy-ready frontend examples under `example-templates/`:
 
-- `index.twig` renders hover/focus tooltips.
+- `tooltip.twig` renders hover/focus tooltips.
 - `modal.twig` renders click-to-open modals.
 - `info-window.twig` renders map-style info windows with a pointer tail.
 
-The examples use Tailwind CSS from the CDN for demonstration only.
+Copy them into your Craft project's `templates/` folder, adjust the field handle/global source, and route them however your project needs. The examples use Tailwind CSS from the CDN for demonstration only.
 
 ## License
 

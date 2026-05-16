@@ -1,3 +1,4 @@
+{# Keep raw IDs for the rendered HTML, and pass namespaced IDs to JavaScript below. #}
 {% set inputId = id %}
 {% set imageSelectId = assetInput.id %}
 {% set markerStageId = "#{id}-stage" %}
@@ -5,19 +6,23 @@
 {% set imageSelectJsId = assetInput.id|namespaceInputId %}
 
 <div id="{{ inputId }}" class="sim-field">
+    {# Markers are serialized into one hidden JSON input so the PHP field can store them in one JSON column. #}
     {{ hiddenInput("#{name}[markers]", markers|json_encode, {
         class: "sim-markers-input",
     }) }}
 
+    {# Reuse Craft's native Assets field input so selection, upload, permissions, and chips behave like core Craft. #}
     <div class="sim-image-picker">
         {% include "_components/fieldtypes/Assets/input.twig" with assetInput only %}
     </div>
 
+    {# The stage is sized by the real image so marker coordinates remain accurate and uncropped. #}
     <div id="{{ markerStageId }}" class="sim-stage {{ imageUrl ? "" : "is-empty" }}">
         <div class="sim-empty">
             {{ "Select an image to start placing markers."|t("super-image-markers") }}
         </div>
         <img class="sim-image" src="{{ imageUrl ?? "" }}" alt="">
+        {# JavaScript renders draggable marker buttons into this layer. #}
         <div class="sim-marker-layer"></div>
     </div>
 
@@ -27,13 +32,16 @@
         </button>
     </div>
 
+    {# Marker rows are rendered client-side so dragging, sorting, color changes, and entry selection stay in sync. #}
     <table class="data fullwidth sim-marker-table">
         <thead>
             <tr>
+                {# Sort handle / marker number column. #}
                 <th scope="col" class="thin"></th>
                 <th scope="col">{{ "Entry"|t("super-image-markers") }}</th>
                 <th scope="col">{{ "X"|t("super-image-markers") }}</th>
                 <th scope="col">{{ "Y"|t("super-image-markers") }}</th>
+                {# Color picker and remove action column. #}
                 <th scope="col" class="thin"></th>
             </tr>
         </thead>
@@ -42,6 +50,7 @@
 </div>
 
 {% js %}
+{# Boot the Garnish field controller with the current image, marker rows, and source restrictions. #}
 new Craft.SuperImageMarkersInput({
     id: {{ inputJsId|json_encode|raw }},
     imageSelectId: {{ imageSelectJsId|json_encode|raw }},

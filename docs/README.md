@@ -29,8 +29,10 @@ This documentation is split by task so setup, editing, and frontend implementati
 
 ## Example Templates
 
-The Craft project includes three Tailwind CDN examples in `templates/suoer-image-markers/`:
+The plugin includes three copy-ready Tailwind CDN examples in `example-templates/`:
 
-- `index.twig` - tooltip markers.
+- `tooltip.twig` - tooltip markers.
 - `modal.twig` - marker modal cards.
 - `info-window.twig` - map-style info windows.
+
+Copy these files into your Craft project's `templates/` folder and adjust routes/field handles for your project.

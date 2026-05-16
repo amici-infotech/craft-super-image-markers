@@ -1,17 +1,21 @@
+/* Root field layout keeps the native asset selector, image stage, actions, and table spaced consistently. */
 .sim-field {
   display: grid;
   gap: 14px;
 }
 
+/* Remove extra spacing from Craft's native element selector inside this compound field. */
 .sim-image-picker .elementselect {
   margin: 0;
 }
 
+/* The image picker can grow if Craft displays upload/progress UI. */
 .sim-image-picker {
   display: grid;
   gap: 8px;
 }
 
+/* The marker stage sizes itself to the image so percentage coordinates map correctly. */
 .sim-stage {
   position: relative;
   width: fit-content;
@@ -21,6 +25,7 @@
   background: var(--gray-050);
 }
 
+/* Empty state expands to a useful drop/selection area before an image is chosen. */
 .sim-stage.is-empty {
   display: flex;
   align-items: center;
@@ -29,15 +34,18 @@
   min-height: 260px;
 }
 
+/* Hidden by default; only shown while the stage has no image. */
 .sim-empty {
   display: none;
   color: var(--light-text-color);
 }
 
+/* Show the empty message instead of an image/marker layer before selection. */
 .sim-stage.is-empty .sim-empty {
   display: block;
 }
 
+/* Preserve the original image aspect ratio; cropping would make marker positions inaccurate. */
 .sim-image {
   display: block;
   width: auto;
@@ -45,16 +53,19 @@
   height: auto;
 }
 
+/* Hide marker UI when there is no selected image. */
 .sim-stage.is-empty .sim-image,
 .sim-stage.is-empty .sim-marker-layer {
   display: none;
 }
 
+/* Marker layer overlays the image exactly. */
 .sim-marker-layer {
   position: absolute;
   inset: 0;
 }
 
+/* Draggable marker shown in the Control Panel image preview. */
 .sim-marker {
   position: absolute;
   width: 22px;
@@ -68,6 +79,7 @@
   transform: translate(-50%, -50%);
 }
 
+/* Inner white dot gives each marker stronger contrast against varied images. */
 .sim-marker::after {
   content: "";
   position: absolute;
@@ -76,30 +88,37 @@
   background: var(--white);
 }
 
+/* Cursor feedback while a marker is being dragged. */
 .sim-marker:active {
   cursor: grabbing;
 }
 
+/* Craft table reset so the marker table aligns with the surrounding field. */
 .sim-marker-table {
   margin: 0;
 }
 
+/* Marker rows use explicit controls for drag, edit, color, and delete. */
 .sim-marker-row {
   cursor: default;
 }
 
+/* Match Craft table hover behavior. */
 .sim-marker-row:hover td {
   background: var(--gray-050);
 }
 
+/* Dim the row while HTML5 drag sorting is active. */
 .sim-marker-row.is-dragging {
   opacity: 0.5;
 }
 
+/* Sort column contains the marker number and drag handle. */
 .sim-sort-cell {
   color: var(--light-text-color);
 }
 
+/* Numeric handle doubles as the drag affordance. */
 .sim-sort-handle {
   min-width: 24px;
   cursor: grab;
@@ -107,14 +126,17 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Cursor feedback while a table row is being reordered. */
 .sim-sort-handle:active {
   cursor: grabbing;
 }
 
+/* Entry column gets enough width for Craft entry titles. */
 .sim-entry-cell {
   min-width: 260px;
 }
 
+/* Entry chip and edit icon live next to each other. */
 .sim-entry-wrap {
   display: inline-flex;
   align-items: center;
@@ -122,6 +144,7 @@
   gap: 4px;
 }
 
+/* Text-only Craft-style chip for selected/unselected entry status. */
 .sim-entry-chip {
   display: inline-flex;
   align-items: center;
@@ -129,32 +152,38 @@
   gap: 6px;
 }
 
+/* Long entry titles should not stretch the table. */
 .sim-entry-title {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* Keep the edit icon visually secondary to the entry label. */
 .sim-entry-action {
   opacity: 0.75;
 }
 
+/* Right-align color and delete controls. */
 .sim-row-actions {
   text-align: end;
   white-space: nowrap;
 }
 
+/* Group row action controls into one compact inline cluster. */
 .sim-row-actions-inner {
   display: inline-flex;
   align-items: center;
   gap: 6px;
 }
 
+/* Nudge Craft's delete icon into optical alignment with the color swatch. */
 .sim-row-actions .delete {
   position: relative;
   top: -2px;
 }
 
+/* Invisible native color input is wrapped by a visible swatch. */
 .sim-color-control {
   position: relative;
   display: inline-flex;
@@ -163,6 +192,7 @@
   cursor: pointer;
 }
 
+/* Visible marker color preview shown in the table. */
 .sim-color-swatch {
   width: 18px;
   height: 18px;
@@ -172,6 +202,7 @@
   box-shadow: 0 0 0 1px var(--hairline-color);
 }
 
+/* Let the native color picker handle browser/platform color UI. */
 .sim-color-input {
   position: absolute;
   inset: 0;
@@ -181,10 +212,12 @@
   cursor: pointer;
 }
 
+/* Align the Add marker button with Craft's flex helpers. */
 .sim-actions {
   align-items: center;
 }
 
+/* Add a lightweight plus sign without relying on a Craft icon class. */
 .sim-add-marker::before {
   content: "+";
   margin-inline-end: 4px;

@@ -44,7 +44,7 @@ This plugin follows the same lightweight pattern as other Amici Craft 5 plugins 
 - Control Panel templates are under `src/templates/`.
 - Control Panel CSS and JavaScript are checked in under `src/resources/dist/`.
 - There is no frontend build step required for the plugin assets.
-- Example frontend templates are stored in the Craft project under `templates/suoer-image-markers/`.
+- Example frontend templates are stored in the plugin under `example-templates/`.
 
 ## Updating Composer Metadata
 

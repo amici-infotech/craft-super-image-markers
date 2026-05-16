@@ -1,5 +1,6 @@
 {% import "_includes/forms" as forms %}
 
+{# Limit which asset volumes can provide the mapped image. Empty means all sources. #}
 {{ forms.checkboxSelectField({
     label: "Allowed asset sources"|t("super-image-markers"),
     instructions: "Leave blank to allow images from all asset sources."|t("super-image-markers"),
@@ -9,6 +10,7 @@
     values: field.assetSources == "*" ? [] : field.assetSources,
 }) }}
 
+{# Craft's native asset selector uses this source for new uploads from the field input. #}
 {{ forms.selectField({
     label: "Default upload volume"|t("super-image-markers"),
     instructions: "Images uploaded from this field will be saved to this volume."|t("super-image-markers"),
@@ -18,6 +20,7 @@
     value: field.defaultUploadLocationSource,
 }) }}
 
+{# Optional folder path inside the upload volume; Craft object-template syntax is supported. #}
 {{ forms.textField({
     label: "Default upload subpath"|t("super-image-markers"),
     instructions: "Optional subfolder path for uploaded images. You can use Craft object template syntax such as `{slug}`."|t("super-image-markers"),
@@ -27,6 +30,7 @@
     placeholder: "path/to/subfolder"|t("app"),
 }) }}
 
+{# Keeps uploads configurable per field, even when an upload volume is selected. #}
 {{ forms.lightswitchField({
     label: "Allow uploading directly to the field"|t("super-image-markers"),
     id: "allowUploads",
@@ -34,6 +38,7 @@
     on: field.allowUploads,
 }) }}
 
+{# Limit which entries can be selected for individual markers. Empty means all entry sources. #}
 {{ forms.checkboxSelectField({
     label: "Allowed entry sources"|t("super-image-markers"),
     instructions: "Leave blank to allow entries from all entry sources."|t("super-image-markers"),
