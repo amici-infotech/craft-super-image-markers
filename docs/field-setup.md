@@ -1,6 +1,6 @@
 # Field Setup
 
-![Create/Edit Field](images/image-marker-create-field)
+![Create/Edit Field](images/image-marker-create-field.png)
 
 ## Create the Field
 
