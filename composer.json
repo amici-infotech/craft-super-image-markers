@@ -24,7 +24,7 @@
     "email": "contact@amiciinfotech.com",
     "issues": "https://github.com/amici-infotech/craft-super-image-markers/issues?state=open",
     "source": "https://github.com/amici-infotech/craft-super-image-markers",
-    "docs": "https://docs.amiciinfotech.com/craft-cms/super-favourite"
+    "docs": "https://docs.amiciinfotech.com/craft-cms/super-image-markers"
   },
   "require": {
     "php": "^8.2",

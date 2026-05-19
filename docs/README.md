@@ -4,7 +4,7 @@ Super Image Markers adds an image mapping field to Craft CMS. Editors select or 
 
 This documentation is split by task so setup, editing, and frontend implementation stay easy to find.
 
-Read the full documentation at [docs.amiciinfotech.com/craft-cms/super-favourite](https://docs.amiciinfotech.com/craft-cms/super-favourite).
+Read the full documentation at [docs.amiciinfotech.com/craft-cms/super-image-markers](https://docs.amiciinfotech.com/craft-cms/super-image-markers).
 
 ## Start Here
 

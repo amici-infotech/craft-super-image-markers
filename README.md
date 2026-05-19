@@ -34,7 +34,7 @@ php craft plugin/install super-image-markers
 
 You can also install it from **Settings -> Plugins** in the Craft Control Panel.
 
-For the full setup flow, see the [Super Image Markers documentation](https://docs.amiciinfotech.com/craft-cms/super-favourite).
+For the full setup flow, see the [Super Image Markers documentation](https://docs.amiciinfotech.com/craft-cms/super-image-markers).
 
 ## Quick Setup
 
@@ -74,7 +74,7 @@ For the full setup flow, see the [Super Image Markers documentation](https://doc
 
 ## Documentation
 
-Read the full documentation at [docs.amiciinfotech.com/craft-cms/super-favourite](https://docs.amiciinfotech.com/craft-cms/super-favourite).
+Read the full documentation at [docs.amiciinfotech.com/craft-cms/super-image-markers](https://docs.amiciinfotech.com/craft-cms/super-image-markers).
 
 Local docs are split by task:
 
