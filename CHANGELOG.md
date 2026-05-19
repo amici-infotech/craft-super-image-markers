@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 - Changed marker table X/Y coordinate cells to editable percentage inputs so editors can fine-tune marker positions without dragging.
 
 ### Fixed
+- Fixed Docs link that was set to other plugin.
+
 - Fixed direct image uploads from the field by targeting the configured upload folder instead of treating Super Image Markers as a native Assets field.
 - Fixed uploaded asset chip rendering by including the active site ID in the native asset selector criteria.
 
