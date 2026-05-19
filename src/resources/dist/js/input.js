@@ -69,6 +69,38 @@
   };
 
   /**
+   * Makes Craft's native asset upload button target our configured upload folder.
+   */
+  const patchAssetSelectUploads = () => {
+    if (!Craft.AssetSelectInput?.prototype || Craft.AssetSelectInput.prototype._superImageMarkersPatched) {
+      return;
+    }
+
+    const originalAttachUploader = Craft.AssetSelectInput.prototype._attachUploader;
+
+    Craft.AssetSelectInput.prototype._attachUploader = function () {
+      originalAttachUploader.apply(this, arguments);
+
+      const uploadFolderId = Number.parseInt(
+        this.$container.closest('.sim-field').data('upload-folder-id'),
+        10
+      );
+
+      if (!Number.isFinite(uploadFolderId) || !this.uploader) {
+        return;
+      }
+
+      this.uploader.setParams({
+        folderId: uploadFolderId,
+      });
+    };
+
+    Craft.AssetSelectInput.prototype._superImageMarkersPatched = true;
+  };
+
+  patchAssetSelectUploads();
+
+  /**
    * Garnish controller for one Super Image Markers field input.
    */
   Craft.SuperImageMarkersInput = Garnish.Base.extend({
@@ -137,6 +169,25 @@
           .siblings('.sim-color-swatch')
           .css('background-color', marker.color);
         this.syncMarkersInput();
+      });
+
+      // Coordinate inputs let editors fine-tune marker placement from the table.
+      this.$tableBody.on('input change', '.sim-coordinate-input', (event) => {
+        const $input = $(event.currentTarget);
+        const marker = this.findMarker($input.data('uid'));
+        const axis = $input.data('axis');
+
+        if (!marker || !['x', 'y'].includes(axis)) {
+          return;
+        }
+
+        marker[axis] = clampPercentage($input.val());
+        this.positionMarker(marker);
+        this.syncMarkersInput();
+
+        if (event.type === 'change') {
+          $input.val(formatPercentage(marker[axis]));
+        }
       });
 
       // Table row drag-and-drop only starts from the sort handle.
@@ -455,6 +506,31 @@
     },
 
     /**
+     * Creates an editable coordinate cell with a percentage suffix.
+     */
+    coordinateCell(marker, axis) {
+      return $('<td/>').append(
+        $('<div/>', {class: 'sim-coordinate-control'}).append(
+          $('<input/>', {
+            type: 'number',
+            class: 'text small sim-coordinate-input',
+            min: 0,
+            max: 100,
+            step: 0.01,
+            value: formatPercentage(marker[axis]),
+            'data-axis': axis,
+            'data-uid': marker.uid,
+            'aria-label': Craft.t('super-image-markers', axis === 'x' ? 'X position' : 'Y position'),
+          }),
+          $('<span/>', {
+            class: 'sim-coordinate-suffix',
+            text: '%',
+          })
+        )
+      );
+    },
+
+    /**
      * Renders the Craft-style marker table below the image.
      */
     renderTable() {
@@ -518,8 +594,8 @@
         // Row order maps directly to the order returned by `markers.all()` in Twig.
         $row.append($sortCell);
         $row.append($entryCell);
-        $row.append($('<td/>', {text: formatPercentage(marker.x)}));
-        $row.append($('<td/>', {text: formatPercentage(marker.y)}));
+        $row.append(this.coordinateCell(marker, 'x'));
+        $row.append(this.coordinateCell(marker, 'y'));
         $row.append(
           $('<td/>', {class: 'thin sim-row-actions'})
             .append($('<div/>', {class: 'sim-row-actions-inner'}).append(

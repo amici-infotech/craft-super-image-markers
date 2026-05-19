@@ -5,7 +5,7 @@
 {% set inputJsId = id|namespaceInputId %}
 {% set imageSelectJsId = assetInput.id|namespaceInputId %}
 
-<div id="{{ inputId }}" class="sim-field">
+<div id="{{ inputId }}" class="sim-field" data-upload-folder-id="{{ assetInput.uploadFolderId ?? "" }}">
     {# Markers are serialized into one hidden JSON input so the PHP field can store them in one JSON column. #}
     {{ hiddenInput("#{name}[markers]", markers|json_encode, {
         class: "sim-markers-input",

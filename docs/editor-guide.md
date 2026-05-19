@@ -23,7 +23,7 @@ The marker coordinates update automatically as percentages.
 
 ## Move a Marker
 
-Drag a marker to a new position on the image.
+Drag a marker to a new position on the image, or edit the X/Y percentage inputs in the marker table.
 
 The marker cannot be moved outside the image bounds. Its X/Y values are clamped between `0` and `100`.
 
@@ -55,8 +55,8 @@ The table below the image shows:
 - Sort handle and marker number.
 - Selected entry title, status, and edit icon.
 - Marker color control.
-- X percentage.
-- Y percentage.
+- Editable X percentage input.
+- Editable Y percentage input.
 - Remove control.
 
 Use this table for a quick audit before saving the element.
@@ -81,6 +81,7 @@ Save the element as usual. The field stores:
 
 - Add the image first, then markers.
 - Place markers near the visual center of the thing they describe.
+- Use the X/Y table inputs for precise percentage adjustments.
 - Use the table to confirm every marker has the expected entry.
 - Use distinct marker colors when several markers are close together.
 - Sort markers in the order frontend users should encounter them.

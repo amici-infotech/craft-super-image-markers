@@ -159,6 +159,24 @@
   white-space: nowrap;
 }
 
+/* Coordinate cells use compact numeric inputs plus a fixed percent suffix. */
+.sim-coordinate-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+/* Keep coordinate inputs narrow enough for table scanning. */
+.sim-coordinate-input {
+  width: 72px;
+}
+
+/* Percent suffix clarifies that stored marker coordinates are responsive percentages. */
+.sim-coordinate-suffix {
+  color: var(--light-text-color);
+}
+
 /* Keep the edit icon visually secondary to the entry label. */
 .sim-entry-action {
   opacity: 0.75;

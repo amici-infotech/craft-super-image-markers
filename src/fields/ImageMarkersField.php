@@ -443,6 +443,7 @@ class ImageMarkersField extends Field
         $uploadSource = $this->defaultUploadLocationSource ?: $this->defaultAssetSource();
         $uploadVolume = $this->volumeBySourceKey($uploadSource);
         $uploadFs = $uploadVolume?->getFs();
+        $uploadFolder = $uploadVolume ? $this->defaultUploadFolder($uploadVolume, $element) : null;
 
         return [
             'id' => sprintf('%s-image', $this->getInputId()),
@@ -455,6 +456,7 @@ class ImageMarkersField extends Field
             'referenceElement' => $element,
             'criteria' => [
                 'kind' => ['image'],
+                'siteId' => $element?->siteId ?? Craft::$app->getSites()->getCurrentSite()->id,
             ],
             'searchCriteria' => null,
             'sourceElementId' => !empty($element?->id) ? $element->id : null,
@@ -463,7 +465,8 @@ class ImageMarkersField extends Field
             'viewMode' => 'list',
             'limit' => 1,
             'storageKey' => 'field.' . ($this->id ?: 'super-image-markers'),
-            'fieldId' => $this->id,
+            // This is not a native Assets field, so direct uploads must target a folder instead of a field ID.
+            'fieldId' => null,
             'prevalidate' => false,
             'canUpload' => (
                 $this->allowUploads &&
@@ -475,7 +478,8 @@ class ImageMarkersField extends Field
             'fsType' => $uploadFs ? $uploadFs::class : null,
             'defaultFieldLayoutId' => $uploadVolume->fieldLayoutId ?? null,
             'defaultSource' => $uploadSource,
-            'defaultSourcePath' => $uploadVolume ? $this->defaultUploadSourcePath($uploadVolume, $element) : null,
+            'defaultSourcePath' => $uploadFolder ? $this->uploadSourcePath($uploadFolder) : null,
+            'uploadFolderId' => $uploadFolder?->id,
             'showSourcePath' => true,
             'showFolders' => true,
             'selectionLabel' => Craft::t('super-image-markers', 'Select image'),
@@ -523,12 +527,12 @@ class ImageMarkersField extends Field
      * @param Volume $volume Upload volume.
      * @param ?ElementInterface $element Owning element used for object-template subpaths.
      *
-     * @return ?array Source path info array for the selector, or null.
+     * @return ?VolumeFolder Upload folder, or null when it cannot be resolved.
      */
-    private function defaultUploadSourcePath(Volume $volume, ?ElementInterface $element): ?array
+    private function defaultUploadFolder(Volume $volume, ?ElementInterface $element): ?VolumeFolder
     {
         if (!$this->defaultUploadLocationSubpath) {
-            return null;
+            return Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id);
         }
 
         try {
@@ -539,6 +543,18 @@ class ImageMarkersField extends Field
             return null;
         }
 
+        return $folder;
+    }
+
+    /**
+     * Builds the full source path trail for the upload folder.
+     *
+     * @param VolumeFolder $folder Upload folder.
+     *
+     * @return array Source path info array for the selector.
+     */
+    private function uploadSourcePath(VolumeFolder $folder): array
+    {
         $folders = [$folder];
 
         // Craft's selector wants the full parent folder trail, not just the leaf folder.
